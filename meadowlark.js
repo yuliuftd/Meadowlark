@@ -1,8 +1,12 @@
 const express = require("express");
 const expressHandlebars = require("express-handlebars");
 const app = express();
+/* eslint-disable no-undef */
 const port = process.env.PORT || 3000;
-const fortune = require("./lib/fortune");
+/* eslint-disable no-undef */
+
+const handlers = require("./lib/handlers");
+// const fortune = require("./lib/fortune");
 app.engine(
   "handlebars",
   expressHandlebars({
@@ -12,25 +16,23 @@ app.engine(
 
 app.set("view engine", "handlebars");
 
-app.get("/", (req, res) => res.render("home"));
+app.get("/", handlers.home);
 
-app.get("/about", (req, res) => {
-  res.render("about", { fortune: fortune.getFortune() });
-});
+app.get("/about", handlers.about);
 
+/* eslint-disable no-undef */
 app.use(express.static(__dirname + "/public"));
+/* eslint-disable no-undef */
 
 //custom 404 page
-app.use((req, res) => {
-  res.status(404);
-  res.render("404");
-});
+app.use(handlers.notFound);
 //custom 500 page
-app.use((err, req, res, next) => {
-  console.error(err.message);
-  res.status(500);
-  res.send("500");
-});
-app.listen(port, () =>
-  console.log(`Express started on http://localhost:${port} ...`)
-);
+app.use(handlers.serverError);
+
+if (require.main === module) {
+  app.listen(port, () =>
+    console.log(`Express started on http://localhost:${port} ...`)
+  );
+} else {
+  module.exports = app;
+}
